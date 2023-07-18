@@ -199,6 +199,6 @@ m_bursterSetting = 19669
 vpower = 1
 freq = 9.81
 
-print(calculate_T_vess(voff, m_bursterSetting, vpower, freq, ad_C_i))
+# print(calculate_T_vess(voff, m_bursterSetting, vpower, freq, ad_C_i))
                 
     
