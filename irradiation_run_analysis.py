@@ -89,4 +89,4 @@ def deltaV_to_deltaT(time_pre, time_dis, time_post, total_time, tme, voltages, T
     
     return delta_T
 
-print(deltaV_to_deltaT(time_pre, time_dis, time_post, total_time, tme, voltages, T_cal, R_burster))
+print(deltaV_to_deltaT(time_pre, time_dis, time_post, total_time, tme, voltages, T_cal, R_burster), "K")
