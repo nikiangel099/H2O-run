@@ -5,7 +5,7 @@ def read_ohm_file():
     voltage_ohm = []
     with open('ohm_run_example.txt') as f:
         for i, line in enumerate(f): # Each line is searched for the variables or data points
-            if i>0 and line[1].isdigit(): # The time and voltage data starts at the second row, it is determined to be a data point as long as the second element is a int (some first elements of each row is whitespace)
+            if i>0 and line[1].isdigit(): # The time and voltage data starts at the second row, it is determined to be a data point as long as the second element is a digit (some first elements of each row is whitespace)
                 column = line.lstrip() # The leading whitespaces are removed (see previous comment)
                 column = column.split(' ') # The time and voltage are separated from the read string
                 time_ohm.append(float(column[0].strip())) # Time is added to list
