@@ -1,21 +1,18 @@
-
-read_ohm_run_file = True
-read_irr_run_file = True
-
+# Functions to read the values from a text file
 
 def read_ohm_file():
     time_ohm = []
     voltage_ohm = []
     with open('ohm_run_example.txt') as f:
-        for i, line in enumerate(f):
-            if i>0 and line[1].isdigit():
-                column = line.lstrip()
-                column = column.split(' ')
-                time_ohm.append(float(column[0].strip()))
-                voltage_ohm.append(float(column[-1].strip()))
-            if line.startswith('PreOHM time (s)'):
-                parts = line.split('=')
-                yield float(parts[1].strip())
+        for i, line in enumerate(f): # Each line is searched for the variables or data points
+            if i>0 and line[1].isdigit(): # The time and voltage data starts at the second row, it is determined to be a data point as long as the second element is a int (some first elements of each row is whitespace)
+                column = line.lstrip() # The leading whitespaces are removed (see previous comment)
+                column = column.split(' ') # The time and voltage are separated from the read string
+                time_ohm.append(float(column[0].strip())) # Time is added to list
+                voltage_ohm.append(float(column[-1].strip())) # Voltage is added to list
+            if line.startswith('PreOHM time (s)'): # Variable name is searched in line
+                parts = line.split('=') # Equal sign is the separation from the variable name and variable value
+                yield float(parts[1].strip()) # The variable value is being output from the function as a yield
             elif line.startswith('OHM time (s)'):
                 parts = line.split('=')
                 yield float(parts[1].strip())
