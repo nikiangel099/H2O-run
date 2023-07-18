@@ -18,7 +18,7 @@ inst.write('I 1') # Sets the local remote status to 'remote': front panel keys a
                   # The display up key returns the status to local
 inst.write('T 6 ,2') # Sets the status of the time constants
                      # pre-time constant: 300 ms, post-time constant: 1 s
-inst.write('L 1 ,0') # Sets the status of the line notch filters
-inst.write('L 2 ,0')
-inst.write('X 1')
-inst.write('E 0')
+inst.write('L 1 ,0') # Sets the status of the line notch filters: 1X notch filter is taken out
+inst.write('L 2 ,0') # 2X notch filter is taken out
+inst.write('X 1') # Sets the return of the designated analog input port: X1 in volts
+inst.write('E 0') # Sets the output expand to 'off'
