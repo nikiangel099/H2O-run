@@ -1,27 +1,29 @@
 import math
-# import pyvisa
+import pyvisa
 
-# def access_lock_in_amplifier():
-#     rm = pyvisa.ResourceManager()
-#     device = 'GPIB0::2::INSTR'  
-#     return rm.open_resource(device)
+# Translated from the C++ functions, I am still not exactly clear what each section is for
 
-# def access_multimeter():
-#     rm = pyvisa.ResourceManager()
-#     device = 'GPIB0::16::INSTR'  
-#     return rm.open_resource(device)
+def access_lock_in_amplifier():
+    rm = pyvisa.ResourceManager()
+    device = 'GPIB0::2::INSTR'  # Device address for lock-in amplifier
+    return rm.open_resource(device)
 
-def sens1(t):
+def access_multimeter():
+    rm = pyvisa.ResourceManager()
+    device = 'GPIB0::16::INSTR' # Device address for multimeter
+    return rm.open_resource(device)
+
+def sens1(t): # Used in signal() below
     if t < 273.15:
         t += 273.15
-    return -3112.621146 / (t * t)
+    return -3112.621146 / (t * t) # -beta1/(t^2)
 
 def sens2(t):
     if t < 273.15:
         t += 273.15
-    return -3120.790829 / (t * t)
+    return -3120.790829 / (t * t) # -beta2/(t^2)
 
-def enter_Z(Ztype, value, freq):
+def enter_Z(Ztype, value, freq): # Used in signal() below
     ret = complex(0.0, 0.0)
     if Ztype[0] == 'R':
         ret = complex(value, 0.0)
@@ -29,11 +31,9 @@ def enter_Z(Ztype, value, freq):
         ret = complex(0.0, -1.0 / (2 * math.pi * freq * value))
     elif Ztype[0] == 'L':
         ret = complex(0.0, 2 * math.pi * freq * value)
-    else:
-        print("Error: Ztype not recognized (R, C, or L ??)")
     return ret
 
-def rterm(t_, it):
+def rterm(t_, it): # Used in signal() below
     r0_1 = 4386.01167
     r0_2 = 4496.510108
     beta1 = 3112.621146
@@ -47,7 +47,7 @@ def rterm(t_, it):
     return fw
 
 def signal(f, optemp, R_B, V_s, C_cp):
-    EP = 0.00001
+    EP = 0.00001 # epsilon
     # below are the NRC defines for the lock-in amplifier and the cabling
     R_1 = 10000.21 
     R_2 = 999.77
@@ -66,13 +66,10 @@ def signal(f, optemp, R_B, V_s, C_cp):
     mK_per_uW2 = 2
     R_s = 51.5
     no_power = False
-    # THRESHOLD_LOW_HIGH = 6
     if optemp < 273.15: #To Kelvin
         optemp += 273.15
     dRterm = 0
     dRterm_old = dRterm + 1
-    # if optemp < (THRESHOLD_LOW_HIGH + 273.15):
-    #     ZR_add = enter_Z("R", float(R_add), f)
 
     ZR_B = enter_Z("R", float(R_B), f)
     ZC_BA = enter_Z("C", float(C_BA * 1.0e-12), f)
@@ -112,11 +109,6 @@ def signal(f, optemp, R_B, V_s, C_cp):
         Z_therm_keep2 = Z_therm
         Z_therm = (Z_therm * ZC_tc) / (Z_therm + ZC_tc)
         Z_therm = (Z_therm * Z_LA) / (Z_therm + Z_LA)
-        
-        # if optemp < (THRESHOLD_LOW_HIGH + 273.15):
-        #     Z_A_add = Z_therm
-        #     Z_A_add = CDiv(CMult(Z_A_add,ZC_BA),CSum(Z_A_add,ZC_BA))
-        # else:
         Z_A_add = (Z_therm * ZC_BA) / (Z_therm + ZC_BA)
         
         Z_A = Z_A_add + ZR_B
@@ -148,16 +140,12 @@ def signal(f, optemp, R_B, V_s, C_cp):
             dRterm += (dRterm1 + dRterm2 - dRterm_old)
        
         ret = complex(V_A.real - V_B.real, V_A.imag - V_B.imag)
-        prV_A = V_A
-        prV_B = V_B
-        R_term = R_th1 + R_th2
-        po1 = P_therm1
-        po2 = P_therm2
+        
         return ret
         
     
 def calculate_T_vess(voff, m_bursterSetting, vpower, freq, C_i):
-    dtemp = 0.1
+    dtemp = 0.1 # 
     net_signal = complex(1.0e10, 0)
     i = 0
     R_est = m_bursterSetting + voff / 25e-6
@@ -176,36 +164,35 @@ def calculate_T_vess(voff, m_bursterSetting, vpower, freq, C_i):
     return T_vess
 
 
-#  def adjusted_C_i():
-#     net_signal = complex(0,1.0e10)
-#     C_i = 1
-#     dC_i = 100.0
-#     m_bursterSetting = 19668
-#     inst = access_lock_in_amplifier()
-#     freq = float((inst.query('F'))[:-2])
-#     voff=0
-#     for i in range(10):
-#         voff += float((inst.query('Q'))[:-2])
-#     voff = voff/10
+ def adjusted_C_i():
+    net_signal = complex(0,1.0e10)
+    C_i = 1
+    dC_i = 100.0
+    m_bursterSetting = 19668
+    inst = access_lock_in_amplifier()
+    freq = float((inst.query('F'))[:-2])
+    voff=0
+    for i in range(10):
+        voff += float((inst.query('Q'))[:-2])
+    voff = voff/10
     
-#     vpower = 1
-#     Vexc = complex(vpower, 0)
-#     R_est = m_bursterSetting + voff / 25e-6
-#     T_vess = 1.0 / (1 / 298.15 + (math.log(R_est) - math.log(9000)) / 3000) - 273.15
+    vpower = 1
+    Vexc = complex(vpower, 0)
+    R_est = m_bursterSetting + voff / 25e-6
+    T_vess = 1.0 / (1 / 298.15 + (math.log(R_est) - math.log(9000)) / 3000) - 273.15
     
-#     while abs(net_signal.imag) > 1.0e-8:
-#         net_signal_old = net_signal.imag
-#         net_signal = signal(freq, T_vess, m_bursterSetting, Vexc, C_i)
+    while abs(net_signal.imag) > 1.0e-8:
+        net_signal_old = net_signal.imag
+        net_signal = signal(freq, T_vess, m_bursterSetting, Vexc, C_i)
     
-#         if (net_signal_old * net_signal.imag) < 0.0:
-#             dC_i /= -2.0
-#         C_i -= dC_i
+        if (net_signal_old * net_signal.imag) < 0.0:
+            dC_i /= -2.0
+        C_i -= dC_i
 
-#   return C_i
+  return C_i
         
-# ad_C_i = adjusted_C_i()
+ad_C_i = adjusted_C_i()
     
-#     return calculate_T_vess(voff, m_bursterSetting, vpower, freq, ad_C_i)
+    return calculate_T_vess(voff, m_bursterSetting, vpower, freq, ad_C_i)
                 
-# print(volt2temp())
     
