@@ -164,17 +164,18 @@ def calculate_T_vess(voff, m_bursterSetting, vpower, freq, C_i):
     return T_vess
 
 
- def adjusted_C_i():
+def adjusted_C_i():
     net_signal = complex(0,1.0e10)
     C_i = 1
     dC_i = 100.0
     m_bursterSetting = 19668
-    inst = access_lock_in_amplifier()
-    freq = float((inst.query('F'))[:-2])
+    # inst = access_lock_in_amplifier()
+    # freq = float((inst.query('F'))[:-2])
+    freq = 9.81
     voff=0
-    for i in range(10):
-        voff += float((inst.query('Q'))[:-2])
-    voff = voff/10
+    # for i in range(10):
+    #     voff += float((inst.query('Q'))[:-2])
+    # voff = voff/10
     
     vpower = 1
     Vexc = complex(vpower, 0)
@@ -189,10 +190,10 @@ def calculate_T_vess(voff, m_bursterSetting, vpower, freq, C_i):
             dC_i /= -2.0
         C_i -= dC_i
 
-  return C_i
+    return C_i
         
 ad_C_i = adjusted_C_i()
     
-    return calculate_T_vess(voff, m_bursterSetting, vpower, freq, ad_C_i)
+print(calculate_T_vess(voff, m_bursterSetting, vpower, freq, ad_C_i))
                 
     
