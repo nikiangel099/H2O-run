@@ -145,19 +145,19 @@ def signal(f, optemp, R_B, V_s, C_cp):
         
     
 def calculate_T_vess(voff, m_bursterSetting, vpower, freq, C_i):
-    dtemp = 0.1 # 
-    net_signal = complex(1.0e10, 0)
-    i = 0
+    dtemp = 0.1 # Initial temperature step of 0.1 deg C
+    net_signal = complex(0, 0)
+    i = 0 # counter
     R_est = m_bursterSetting + voff / 25e-6
-    T_vess = 1.0 / (1 / 298.15 + (math.log(R_est) - math.log(9000)) / 3000) - 273.15
+    T_vess = 1.0 / (1 / 298.15 + (math.log(R_est) - math.log(9000)) / 3000) - 273.15 # Same formula given in the original files
     Vexc = complex(vpower, 0)
     
-    while abs(net_signal.imag - voff) > 1.0e-9 and abs(dtemp) > 1e-8 and i < 100:
+    while abs(net_signal.imag - voff) > 1.0e-9 and abs(dtemp) > 1e-8 and i < 100: # Loop continues until 100 iterations but can stop early due to the other conditions
         net_signal_old = net_signal.imag - voff
         net_signal = signal(freq, T_vess, m_bursterSetting, Vexc, C_i)
         if abs(net_signal.imag - voff) > 1.0e-9:
             if net_signal_old*(net_signal.imag - voff) < 0.0000001:
-                dtemp /= -2
+                dtemp /= -2 # abs(dtemp) decreases in this if statement
             T_vess += dtemp
             i += 1
             
@@ -172,7 +172,7 @@ def adjusted_C_i():
     # inst = access_lock_in_amplifier()
     # freq = float((inst.query('F'))[:-2])
     freq = 9.81
-    voff=0
+    voff=5e-6
     # for i in range(10):
     #     voff += float((inst.query('Q'))[:-2])
     # voff = voff/10
@@ -193,7 +193,12 @@ def adjusted_C_i():
     return C_i
         
 ad_C_i = adjusted_C_i()
-    
+
+voff = 5e-6 # Made up these values for now
+m_bursterSetting = 19669
+vpower = 1
+freq = 9.81
+
 print(calculate_T_vess(voff, m_bursterSetting, vpower, freq, ad_C_i))
                 
     
