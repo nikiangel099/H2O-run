@@ -1,29 +1,27 @@
-# import pyvisa
-import time
+# This python file extracts the ohm run values from the read_ohm_file
+
 import numpy as np
 import matplotlib.pyplot as plt
-from functions import *
-from read_from_file import *
+from read_from_file import * # All functions and variables are imported from read_from_file.py
 
-plt.xlabel('time (s)')
-plt.ylabel('Temperature (celsius)')
+plt.xlabel('Time (s)')
+plt.ylabel('Voltages (mK)')
 plt.rcParams["figure.figsize"] = [20, 15]
 
-if read_ohm_run_file:
-    generator = read_ohm_file()
-    time_pre_ohm = int(next(generator))
-    time_ohm = int(next(generator))
-    time_post_ohm = int(next(generator))
-    total_time_ohm = time_pre_ohm + time_ohm + time_post_ohm
-    next(generator)
-    next(generator)
-    tme_ohm = next(generator)
-    voltages_ohm = next(generator)
-    plt.plot(tme_ohm, voltages_ohm, c = 'red')
-    plt.show()
+generator = read_ohm_file() # read_ohm_file() becomes a generator object
+time_pre_ohm = int(next(generator)) # First yield result is given to variable time_pre_ohm
+time_ohm = int(next(generator))
+time_post_ohm = int(next(generator))
+total_time_ohm = time_pre_ohm + time_ohm + time_post_ohm
+next(generator) # The temperature of the water and burster setting is ignored as it isn't used in any calculations (Extracted from text file just in case)
+next(generator)
+tme_ohm = next(generator)
+voltages_ohm = next(generator)
+plt.plot(tme_ohm, voltages_ohm, c = 'red') # All time and voltage data points are plotted
+plt.show()
 
 
-plt.plot(tme_ohm[1:time_pre_ohm - 4],voltages_ohm[1:time_pre_ohm - 4], c='blue')
-plt.plot(tme_ohm[time_pre_ohm + 5:total_time_ohm - time_post_ohm - 4],voltages_ohm[time_pre_ohm + 5:total_time_ohm - time_post_ohm - 4], c='black')
-plt.plot(tme_ohm[time_pre_ohm + time_ohm + 5:total_time_ohm + 1],voltages_ohm[time_pre_ohm + time_ohm + 5:total_time_ohm +1], c='red')
+plt.plot(tme_ohm[1:time_pre_ohm - 4],voltages_ohm[1:time_pre_ohm - 4], c='blue') # Pre-drift is plotted in blue 
+plt.plot(tme_ohm[time_pre_ohm + 5:total_time_ohm - time_post_ohm - 4],voltages_ohm[time_pre_ohm + 5:total_time_ohm - time_post_ohm - 4], c='black') # Duration of 1 ohm gain is plotted in black
+plt.plot(tme_ohm[time_pre_ohm + time_ohm + 5:total_time_ohm + 1],voltages_ohm[time_pre_ohm + time_ohm + 5:total_time_ohm +1], c='red') # Post-drift is plotted in red
 
