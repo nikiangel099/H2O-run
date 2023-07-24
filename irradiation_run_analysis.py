@@ -23,30 +23,34 @@ plt.plot(tme, voltages, c = 'red')
 plt.show()
 plt.close()
 
+pre_drift_ignore = 5
+post_drift_ignore = 5
+ohm_run_ignore = 2
 
-plt.plot(tme[1:time_pre - 4], voltages[1:time_pre - 4], c='blue') # pre-drift is plotted in blue
-plt.plot(tme[time_pre + time_dis + 5:total_time + 1],voltages[time_pre + time_dis + 5:total_time + 1], c='red') # pre-drift is plotted in red
+
+plt.plot(tme[1:time_pre - pre_drift_ignore + 1], voltages[1:time_pre - pre_drift_ignore + 1], c='blue') # pre-drift is plotted in blue
+plt.plot(tme[time_pre + time_dis + post_drift_ignore:total_time + 1],voltages[time_pre + time_dis + post_drift_ignore:total_time + 1], c='red') # post-drift is plotted in red
 plt.show()
 plt.close()
-def ohm_calibration(time_pre_ohm, time_ohm, time_post_ohm, total_time_ohm, tme_ohm, voltages_ohm):
-    a, b = np.polyfit(tme_ohm[1:time_pre_ohm - 4],voltages_ohm[1:time_pre_ohm - 4], 1) # Line of best fit of pre-drift
+def ohm_calibration(time_pre_ohm, time_ohm, time_post_ohm, total_time_ohm, tme_ohm, voltages_ohm, pre_drift_ignore, post_drift_ignore, ohm_run_ignore):
+    a, b = np.polyfit(tme_ohm[1:time_pre_ohm - pre_drift_ignore + 1],voltages_ohm[1:time_pre_ohm - pre_drift_ignore + 1], 1) # Line of best fit of pre-drift
     pre_volt = a * (total_time_ohm - time_ohm - time_post_ohm + 0.5 * time_ohm) + b # Forward extrapolated to determine value at midpoint
   
-    a, b = np.polyfit(tme_ohm[time_pre_ohm + 5 :total_time_ohm - time_post_ohm - 4],voltages_ohm[time_pre_ohm + 5:total_time_ohm - time_post_ohm - 4], 1)
+    a, b = np.polyfit(tme_ohm[time_pre_ohm + ohm_run_ignore :total_time_ohm - time_post_ohm - ohm_run_ignore + 1], voltages_ohm[time_pre_ohm + ohm_run_ignore:total_time_ohm - time_post_ohm - ohm_run_ignore + 1], 1)
     top_volt = a * (total_time_ohm - time_ohm - time_post_ohm + 0.5 * time_ohm) + b
 
-    a, b = np.polyfit(tme_ohm[time_pre_ohm + time_ohm + 5:total_time_ohm + 1],voltages_ohm[time_pre_ohm + time_ohm + 5:total_time_ohm + 1], 1)
+    a, b = np.polyfit(tme_ohm[time_pre_ohm + time_ohm + post_drift_ignore:total_time_ohm + 1],voltages_ohm[time_pre_ohm + time_ohm + post_drift_ignore:total_time_ohm + 1], 1)
     post_volt = a * (total_time_ohm - time_ohm - time_post_ohm + 0.5 * time_ohm) + b
 
     calibration = (((top_volt - pre_volt) + (top_volt - post_volt))/2)*1e-3 # The average between the two delta_V
     
     return calibration # returns (deltaV/deltaR)_1ohm
 
-def deltaV_to_deltaT(time_pre, time_dis, time_post, total_time, tme, voltages, T_cal, R_burster):
-    a, b = np.polyfit(tme[1:time_pre - 4],voltages[1:time_pre - 4], 1)
+def deltaV_to_deltaT(time_pre, time_dis, time_post, total_time, tme, voltages, T_cal, R_burster, pre_drift_ignore, post_drift_ignore):
+    a, b = np.polyfit(tme[1:time_pre - pre_drift_ignore + 1],voltages[1:time_pre - pre_drift_ignore + 1], 1)
     pre_volt = a * (total_time - time_dis - time_post + 0.5 * time_dis) + b 
        
-    a, b = np.polyfit(tme[time_pre + time_dis + 5:total_time +1],voltages[time_pre + time_dis + 5:total_time +1], 1)
+    a, b = np.polyfit(tme[time_pre + time_dis + post_drift_ignore:total_time +1],voltages[time_pre + time_dis + post_drift_ignore:total_time +1], 1)
     post_volt = a * (total_time - time_dis - time_post + 0.5 * time_dis) + b
     
     delta_volt = (post_volt - pre_volt)*1e-3 # deltaV (V)
@@ -82,11 +86,11 @@ def deltaV_to_deltaT(time_pre, time_dis, time_post, total_time, tme, voltages, T
     #     RI = 100.04198
     
     #T_cal = (-1*AI+(math.sqrt((AI*AI)-(4*BI*(1-(R_temp/RI))))))/(2*BI)
-    beta = 3112.621146
-    deltaV_deltaR = ohm_calibration(time_pre_ohm, time_ohm, time_post_ohm, total_time_ohm, tme_ohm, voltages_ohm)
-    #deltaV_deltaR = 25e-6
+    beta = 3112.621146 # Beta value of one of the two probes
+    deltaV_deltaR = ohm_calibration(time_pre_ohm, time_ohm, time_post_ohm, total_time_ohm, tme_ohm, voltages_ohm, pre_drift_ignore, post_drift_ignore, ohm_run_ignore)
+    #deltaV_deltaR = 25e-6 # # The above should be approximately equal to this value
     delta_T = (delta_volt*T_cal**2)/(deltaV_deltaR*R_burster*beta)
     
     return delta_T
 
-print(deltaV_to_deltaT(time_pre, time_dis, time_post, total_time, tme, voltages, T_cal, R_burster), "K")
+print(deltaV_to_deltaT(time_pre, time_dis, time_post, total_time, tme, voltages, T_cal, R_burster, pre_drift_ignore, post_drift_ignore), "K")
