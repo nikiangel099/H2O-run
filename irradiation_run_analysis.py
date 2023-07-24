@@ -3,14 +3,14 @@ import matplotlib.pyplot as plt
 import math
 from functions import *
 from read_from_file import *
-from ohm_run_variables import *
+from ohm_run_plot import *
 
 plt.xlabel('time (s)')
 plt.ylabel('Voltage (mV)')
 plt.rcParams["figure.figsize"] = [20, 15]
 
-
-generator = read_irr_file() # Variable are read from read_from_file.py
+# # Irradiation run variables are read from read_from_file.py
+generator = read_irr_file() # 
 time_pre = int(next(generator))
 time_dis = int(next(generator))
 time_post = int(next(generator))
@@ -19,7 +19,40 @@ T_cal= next(generator)
 R_burster= next(generator)
 tme = next(generator)
 voltages = next(generator)
-plt.plot(tme, voltages, c = 'red')
+plt.plot(tme, voltages)
+plt.show()
+plt.close()
+
+plt.xlabel('time (s)')
+plt.ylabel('Voltage (mV)')
+plt.rcParams["figure.figsize"] = [20, 15]
+plt.plot(tme[1:time_pre - pre_drift_ignore + 1], voltages[1:time_pre - pre_drift_ignore + 1], c='blue') # pre-drift is plotted in blue
+plt.plot(tme[time_pre + time_dis + post_drift_ignore:total_time + 1],voltages[time_pre + time_dis + post_drift_ignore:total_time + 1], c='red') # post-drift is plotted in red
+plt.show()
+plt.close()
+
+# # Ohm run variables are read from read_from_file.py
+generator = read_ohm_file() # read_ohm_file() becomes a generator object
+time_pre_ohm = int(next(generator)) # First yield result is given to variable time_pre_ohm
+time_ohm = int(next(generator))
+time_post_ohm = int(next(generator))
+total_time_ohm = time_pre_ohm + time_ohm + time_post_ohm
+next(generator) # The temperature of the water and burster setting is ignored as it isn't used in any calculations (Extracted from text file just in case)
+next(generator)
+tme_ohm = next(generator)
+voltages_ohm = next(generator)
+plt.xlabel('time (s)')
+plt.ylabel('Voltage (mV)')
+plt.rcParams["figure.figsize"] = [20, 15]
+plt.plot(tme_ohm, voltages_ohm) # All time and voltage data points are plotted
+plt.show()
+
+plt.xlabel('time (s)')
+plt.ylabel('Voltage (mV)')
+plt.rcParams["figure.figsize"] = [20, 15]
+plt.plot(tme_ohm[1:time_pre_ohm - 4],voltages_ohm[1:time_pre_ohm - 4], c='blue') # Pre-drift is plotted in blue 
+plt.plot(tme_ohm[time_pre_ohm + 5:total_time_ohm - time_post_ohm - 4],voltages_ohm[time_pre_ohm + 5:total_time_ohm - time_post_ohm - 4], c='black') # Duration of 1 ohm gain is plotted in black
+plt.plot(tme_ohm[time_pre_ohm + time_ohm + 5:total_time_ohm + 1],voltages_ohm[time_pre_ohm + time_ohm + 5:total_time_ohm +1], c='red') # Post-drift is plotted in red
 plt.show()
 plt.close()
 
@@ -27,11 +60,6 @@ pre_drift_ignore = 5
 post_drift_ignore = 5
 ohm_run_ignore = 2
 
-
-plt.plot(tme[1:time_pre - pre_drift_ignore + 1], voltages[1:time_pre - pre_drift_ignore + 1], c='blue') # pre-drift is plotted in blue
-plt.plot(tme[time_pre + time_dis + post_drift_ignore:total_time + 1],voltages[time_pre + time_dis + post_drift_ignore:total_time + 1], c='red') # post-drift is plotted in red
-plt.show()
-plt.close()
 def ohm_calibration(time_pre_ohm, time_ohm, time_post_ohm, total_time_ohm, tme_ohm, voltages_ohm, pre_drift_ignore, post_drift_ignore, ohm_run_ignore):
     a, b = np.polyfit(tme_ohm[1:time_pre_ohm - pre_drift_ignore + 1],voltages_ohm[1:time_pre_ohm - pre_drift_ignore + 1], 1) # Line of best fit of pre-drift
     pre_volt = a * (total_time_ohm - time_ohm - time_post_ohm + 0.5 * time_ohm) + b # Forward extrapolated to determine value at midpoint
