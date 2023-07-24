@@ -2,6 +2,7 @@ import pyvisa
 from functions import *
 import math
 
+# This file takes the four-series resistance and outputs the temperature of the calorimeter
 
 inst = access_multimeter()
 

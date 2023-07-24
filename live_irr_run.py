@@ -21,7 +21,7 @@ while counter < total_time:
     if counter == 0:
         tme.append(0)
         voltages.append(float(inst.query('Q')[:-2]))
-    elif curr - prev < counter + 0.01 and curr - prev > counter:
+    elif curr - prev < counter + 0.01 and curr - prev > counter: # Queries device every second
         time.append(curr)
         voltages.append(float(inst.query('Q')[:-2]))
     prev = curr
