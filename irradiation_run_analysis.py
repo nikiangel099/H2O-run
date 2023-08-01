@@ -10,28 +10,30 @@ plt.xlabel('time (s)')
 plt.ylabel('Voltage (mV)')
 plt.rcParams["figure.figsize"] = [20, 15]
 
-live_run = False
+
 
 R_burster = 19669
 pre_drift_ignore = 5
 post_drift_ignore = 5
 ohm_run_ignore = 2
 
-if live_run == False:
-    # # Irradiation run variables are read from read_from_file.py
-    generator = read_irr_file()
-    time_pre = int(next(generator))
-    time_dis = int(next(generator))
-    time_post = int(next(generator))
-    total_time = time_pre + time_dis + time_post
-    T_cal = next(generator)
-    R_burster = next(generator)
-    tme = next(generator)
-    voltages = next(generator)
+
+# # Irradiation run variables are read from read_from_file.py
+generator = read_irr_file()
+time_pre = int(next(generator))
+time_dis = int(next(generator))
+time_post = int(next(generator))
+total_time = time_pre + time_dis + time_post
+T_cal = next(generator)
+R_burster = next(generator)
+tme = next(generator)
+voltages = next(generator)
+
+
+plt.plot(tme, voltages)
+plt.show()
+plt.close()
     
-    plt.plot(tme, voltages)
-    plt.show()
-    plt.close()
 
 plt.xlabel('time (s)')
 plt.ylabel('Voltage (mV)')
@@ -41,17 +43,18 @@ plt.plot(tme[time_pre + time_dis + post_drift_ignore:total_time + 1],voltages[ti
 plt.show()
 plt.close()
 
-if live_run == False:
-    # # Ohm run variables are read from read_from_file.py, otherwise it is taken from live_ohm_run.py
-    generator = read_ohm_file() # read_ohm_file() becomes a generator object
-    time_pre_ohm = int(next(generator)) # First yield result is given to variable time_pre_ohm
-    time_ohm = int(next(generator))
-    time_post_ohm = int(next(generator))
-    total_time_ohm = time_pre_ohm + time_ohm + time_post_ohm
-    next(generator) # The temperature of the water and burster setting is ignored as it isn't used in any calculations (Extracted from text file just in case)
-    next(generator)
-    tme_ohm = next(generator)
-    voltages_ohm = next(generator)
+
+# # Ohm run variables are read from read_from_file.py, otherwise it is taken from live_ohm_run.py
+generator = read_ohm_file() # read_ohm_file() becomes a generator object
+time_pre_ohm = int(next(generator)) # First yield result is given to variable time_pre_ohm
+time_ohm = int(next(generator))
+time_post_ohm = int(next(generator))
+total_time_ohm = time_pre_ohm + time_ohm + time_post_ohm
+tme_ohm = next(generator)
+voltages_ohm = next(generator)
+
+    
+    
     
 plt.xlabel('time (s)')
 plt.ylabel('Voltage (mV)')
@@ -84,7 +87,7 @@ def ohm_calibration(time_pre_ohm, time_ohm, time_post_ohm, total_time_ohm, tme_o
     
     return calibration # returns (deltaV/deltaR)_1ohm
 
-def deltaV_to_deltaT(time_pre, time_dis, time_post, total_time, tme, voltages, R_burster, pre_drift_ignore, post_drift_ignore, live_run, T_cal):
+def deltaV_to_deltaT(time_pre, time_dis, time_post, total_time, tme, voltages, R_burster, pre_drift_ignore, post_drift_ignore, T_cal):
     a, b = np.polyfit(tme[1:time_pre - pre_drift_ignore + 1],voltages[1:time_pre - pre_drift_ignore + 1], 1)
     pre_volt = a * (total_time - time_dis - time_post + 0.5 * time_dis) + b 
        
@@ -92,10 +95,6 @@ def deltaV_to_deltaT(time_pre, time_dis, time_post, total_time, tme, voltages, R
     post_volt = a * (total_time - time_dis - time_post + 0.5 * time_dis) + b
     
     delta_volt = (post_volt - pre_volt)*1e-3 # deltaV (V)
-
-    if live_run == True:
-        global live_T_cal
-        T_cal = live_T_cal
         
     beta = 3112.621146 # Beta value of one of the two probes
     deltaV_deltaR = ohm_calibration(time_pre_ohm, time_ohm, time_post_ohm, total_time_ohm, tme_ohm, voltages_ohm, pre_drift_ignore, post_drift_ignore, ohm_run_ignore)
@@ -104,4 +103,4 @@ def deltaV_to_deltaT(time_pre, time_dis, time_post, total_time, tme, voltages, R
     
     return delta_T
 
-print(deltaV_to_deltaT(time_pre, time_dis, time_post, total_time, tme, voltages, R_burster, pre_drift_ignore, post_drift_ignore, live_run, T_cal), "K")
+print(deltaV_to_deltaT(time_pre, time_dis, time_post, total_time, tme, voltages, R_burster, pre_drift_ignore, post_drift_ignore, T_cal), "K")
