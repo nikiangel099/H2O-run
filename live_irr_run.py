@@ -14,17 +14,17 @@ total_time = time_pre + time_dis + time_post
 tme = []
 voltages = []
 
-counter = 0
-prev = time.time()
-while counter < total_time:
+counter = 1
+start = time.time()
+tme.append(0)
+voltages.append(float(inst.query('Q')[:-2]))
+while counter < total_time+ 1:
     curr = time.time()
-    if counter == 0:
-        tme.append(0)
+    if (curr - start) > counter:
+        tme.append(curr - start)
         voltages.append(float(inst.query('Q')[:-2]))
-    elif curr - prev < counter + 0.01 and curr - prev > counter: # Queries device every second
-        time.append(curr)
-        voltages.append(float(inst.query('Q')[:-2]))
-    prev = curr
-    counter += 1
-    plt.plot(tme, voltages)
-    plt.show()
+        counter += 1
+        print(tme[counter-1], "    ", voltages[counter-1])
+        plt.plot(tme, voltages)
+        plt.show()
+    

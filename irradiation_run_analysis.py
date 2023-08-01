@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from functions import *
 from read_from_file import *
-# from live_ohm_run.py import * # # Keep these comments commented unless connected to device
-# from live_irr_run.py import *
+# from live_ohm_run import * # # Keep these comments commented unless connected to device
+# from live_irr_run import *
 # from T_cal_calc import *
 
 plt.xlabel('time (s)')
@@ -29,9 +29,9 @@ if live_run == False:
     tme = next(generator)
     voltages = next(generator)
     
-plt.plot(tme, voltages)
-plt.show()
-plt.close()
+    plt.plot(tme, voltages)
+    plt.show()
+    plt.close()
 
 plt.xlabel('time (s)')
 plt.ylabel('Voltage (mV)')
