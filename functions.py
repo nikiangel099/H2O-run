@@ -2,6 +2,7 @@ import math
 import pyvisa
 
 # Translated from the C++ functions, I am still not exactly clear what each section is for
+# Ignore this .py file for now
 
 def access_lock_in_amplifier():
     rm = pyvisa.ResourceManager()
