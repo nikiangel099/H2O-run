@@ -6,7 +6,7 @@ def replace_char(csv_line, old_char, new_char):
 def read_ohm_file():
     time_ohm = []
     voltage_ohm = []
-    with open('live_ohm_run_to_file.txt') as f:
+    with open('ohm_run_example.txt') as f:
         for i, line in enumerate(f): # Each line is searched for the variables or data points
             if i>0 and line[4].isdigit(): # The time and voltage data starts at the second row, it is determined to be a data point as long as the second element is a digit (some first elements of each row is whitespace)
                 column = line.lstrip() # The leading whitespaces are removed (see previous comment)
@@ -30,13 +30,19 @@ def read_ohm_file():
 def read_irr_file():
     time_irr = []
     voltage_irr = []
-    with open('live_irr_run_to_file.txt') as f:
+    with open('irr_run_example.txt') as f:
         for i, line in enumerate(f):
             if i>0 and line[4].isdigit():
                 column = line.lstrip()
                 column = column.split(' ')
                 time_irr.append(float(column[0].strip()))
                 voltage_irr.append(float(column[-1].strip()))
+            if line.startswith('Date of measurement'):
+                parts = line.split('=')
+                yield parts[1].strip()
+            if line.startswith('Time of measurement'):
+                parts = line.split('=')
+                yield parts[1].strip()
             if line.startswith('Predrift time (s)'):
                 parts = line.split('=')
                 yield float(parts[1].strip())

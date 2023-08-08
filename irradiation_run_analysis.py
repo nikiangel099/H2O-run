@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from functions import *
 from read_from_file import *
+import os
+import csv
 # from live_ohm_run import * # # Keep these comments commented unless connected to device
 # from live_irr_run import *
 # from T_cal_calc import *
@@ -20,6 +22,8 @@ ohm_run_ignore = 2
 
 # # Irradiation run variables are read from read_from_file.py
 generator = read_irr_file()
+date_measure = next(generator)
+time_measure = next(generator)
 time_pre = int(next(generator))
 time_dis = int(next(generator))
 time_post = int(next(generator))
@@ -28,6 +32,8 @@ T_cal = next(generator)
 R_burster = next(generator)
 tme = next(generator)
 voltages = next(generator)
+# print(time_pre, time_dis, time_post, total_time, T_cal, R_burster, tme, voltages)
+
 
 
 plt.plot(tme, voltages)
@@ -53,6 +59,7 @@ total_time_ohm = time_pre_ohm + time_ohm + time_post_ohm
 tme_ohm = next(generator)
 voltages_ohm = next(generator)
 
+# print(time_pre_ohm, time_ohm, time_post_ohm, total_time_ohm, tme_ohm, voltages_ohm)
     
     
     
@@ -87,7 +94,7 @@ def ohm_calibration(time_pre_ohm, time_ohm, time_post_ohm, total_time_ohm, tme_o
     
     return calibration # returns (deltaV/deltaR)_1ohm
 
-def deltaV_to_deltaT(time_pre, time_dis, time_post, total_time, tme, voltages, R_burster, pre_drift_ignore, post_drift_ignore, T_cal):
+def deltaV(time_pre, time_dis, time_post, total_time, tme, voltages, R_burster, pre_drift_ignore, post_drift_ignore, T_cal):
     a, b = np.polyfit(tme[1:time_pre - pre_drift_ignore + 1],voltages[1:time_pre - pre_drift_ignore + 1], 1)
     pre_volt = a * (total_time - time_dis - time_post + 0.5 * time_dis) + b 
        
@@ -95,12 +102,43 @@ def deltaV_to_deltaT(time_pre, time_dis, time_post, total_time, tme, voltages, R
     post_volt = a * (total_time - time_dis - time_post + 0.5 * time_dis) + b
     
     delta_volt = (post_volt - pre_volt)*1e-3 # deltaV (V)
-        
+    return delta_volt
+
+def deltaV_to_deltaT(delta_volt, T_cal, R_burster):
     beta = 3112.621146 # Beta value of one of the two probes
     deltaV_deltaR = ohm_calibration(time_pre_ohm, time_ohm, time_post_ohm, total_time_ohm, tme_ohm, voltages_ohm, pre_drift_ignore, post_drift_ignore, ohm_run_ignore)
     #deltaV_deltaR = 25e-6 # # The above should be approximately equal to this value
     delta_T = (delta_volt*T_cal**2)/(deltaV_deltaR*R_burster*beta)
     
     return delta_T
+filename = "analysis_results.csv"
+file_location = str(os.getcwd()), "\\", "analysis_results.txt"
+file_location = "".join(file_location)
 
-print(deltaV_to_deltaT(time_pre, time_dis, time_post, total_time, tme, voltages, R_burster, pre_drift_ignore, post_drift_ignore, T_cal), "K")
+with open(filename, 'w') as csvfile:
+    csvwriter = csv.writer(csvfile, delimiter = ' ', quotechar = "$", quoting = csv.QUOTE_MINIMAL)
+    csvwriter.writerow(("Filename given when saved in H2ORUN=", file_location))
+    csvwriter.writerow(("Date of measurement=", date_measure))
+    csvwriter.writerow(('Time of measurement=', time_measure))
+    csvwriter.writerow(("PreOHM time (s)=", time_pre_ohm))
+    csvwriter.writerow(("OHM time (s)=", time_ohm))
+    csvwriter.writerow(("AfterOHM time (s)=", time_post_ohm))
+    csvwriter.writerow(("Current decade box resistance=", R_burster))
+    csvwriter.writerow(("1 Ohm calibration (V/ohm)=", ohm_calibration(time_pre_ohm, time_ohm, time_post_ohm, total_time_ohm, tme_ohm, voltages_ohm, pre_drift_ignore, post_drift_ignore, ohm_run_ignore)))
+    csvwriter.writerow(("Change in voltage for irradiation run (V)=", deltaV(time_pre, time_dis, time_post, total_time, tme, voltages, R_burster, pre_drift_ignore, post_drift_ignore, T_cal)))
+    csvwriter.writerow(("Change in temperature for irradiation run (K)=", deltaV_to_deltaT(deltaV(time_pre, time_dis, time_post, total_time, tme, voltages, R_burster, pre_drift_ignore, post_drift_ignore, T_cal), T_cal, R_burster)))
+    csvwriter.writerow(("-------------------------------------------"))
+    csvwriter.writerow(('Time (s)', 'Voltage (microV)'))
+    for i in range(total_time_ohm): 
+        csvwriter.writerow((format(tme_ohm[i], '.7f'), format(voltages_ohm[i], '.7f')))
+        
+def replace_char(csv_line, old_char, new_char):
+    return csv_line.replace(old_char, new_char)
+
+with open('analysis_results.csv') as f:
+    g = open("analysis_results.txt", "w")
+    for i, line in enumerate(f): # Each line is searched for the variables or data points
+        a = replace_char(line, "$", "")
+        if not a.strip() == "":
+            g.write(a)
+    g.close()
