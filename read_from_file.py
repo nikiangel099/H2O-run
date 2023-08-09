@@ -3,11 +3,12 @@
 def replace_char(csv_line, old_char, new_char):
     return csv_line.replace(old_char, new_char)
 
-def read_ohm_file():
+filename_ohm = 'live_ohm_run_to_file.txt'
+def read_ohm_file(filename_ohm):
     time_ohm = []
     voltage_ohm = []
     # Keep the filename 'live_ohm_run_to_file.txt' below if live_ohm_run.py was just run. Otherwise, can change the filename to an older ohm run file you wish to analyze
-    with open('live_ohm_run_to_file.txt') as f:
+    with open(filename_ohm) as f:
         for i, line in enumerate(f): # Each line is searched for the variables or data points
             if i>0 and line[4].isdigit(): # The time and voltage data starts at the second row, it is determined to be a data point as long as the second element is a digit (some first elements of each row is whitespace)
                 column = line.lstrip() # The leading whitespaces are removed (see previous comment)

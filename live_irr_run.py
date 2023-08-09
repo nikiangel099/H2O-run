@@ -5,6 +5,7 @@ import csv
 import os
 from datetime import datetime, timezone
 import pytz
+from T_cal_calc import *
 
 d = datetime.now(pytz.timezone("America/New_York"))
 rm = pyvisa.ResourceManager()
@@ -25,7 +26,7 @@ tme = []
 voltages = []
 
 curr_time = d.strftime("%X") # Initializes variable to the current time
-
+T_cal_1 = measure_T_cal() # pre-irr T_cal is measured
 # # Keep commented unless connected to GPIB device:
 counter = 1
 start = time.time()
@@ -39,19 +40,22 @@ while counter < total_time + 1:
         counter += 1
         plt.plot(tme, voltages)
         plt.show()
+        
+T_cal_2 = measure_T_cal() # post-irr T_cal is measured
+T_cal = (T_cal_1+T_cal_2)/2 # Average T_cal is taken
 
 # Below gets file location and current date of the file that will be displayed in the output analysis file
 filename = "live_irr_run_to_file.csv"
 file_location = str(os.getcwd()), "\\", "live_irr_run_to_file.txt"
 file_location = "".join(file_location)
-date = d.strftime("%A"), ", ", d.strftime("%b"), " ", d.strftime("%d"), ", ", d.strftime("%Y")
+date = d.strftime("%A"), " ", d.strftime("%b"), " ", d.strftime("%d"), " ", d.strftime("%Y")
 date = "".join(date)
 date = "".join(date)
 
 # csv file is written to include the following values below
 with open(filename, 'w') as csvfile:
-    csvwriter = csv.writer(csvfile, delimiter = ' ', quotechar = "$", quoting = csv.QUOTE_MINIMAL) # Necessary to remove the quotation marks 
-    csvwriter.writerow(('Time (s),', 'Voltage (microV)'))
+    csvwriter = csv.writer(csvfile, delimiter = ',', escapechar = "$", quoting = csv.QUOTE_NONE) # Necessary to remove the quotation marks 
+    csvwriter.writerow(('Time (s)', 'Voltage (microV)'))
     for i in range(total_time + 1): 
         csvwriter.writerow((format(tme[i], '.7f'), format(voltages[i], '.7f')))
     csvwriter.writerow(("Filename given when saved in H2ORUN=", file_location))
@@ -60,7 +64,7 @@ with open(filename, 'w') as csvfile:
     csvwriter.writerow(('Predrift time (s)=', time_pre))
     csvwriter.writerow(('Dissipation time (s)=', time_dis))
     csvwriter.writerow(('Afterdrift time (s)=', time_post))
-    csvwriter.writerow(('Twater(K)=', 277.00))
+    csvwriter.writerow(('Twater(K)=', T_cal))
     csvwriter.writerow(('Decade box setting(OHM)=', bursterSetting))
 
     
@@ -70,7 +74,7 @@ def replace_char(csv_line, old_char, new_char):
 with open('live_irr_run_to_file.csv') as f: # Also written to a .txt file for easier analysis in the future
     g = open("live_irr_run_to_file.txt", "w")
     for i, line in enumerate(f): 
-        a = replace_char(line, "$", "") # Each line is searched for the quote character "$" and removed using the function initialized above
+        a = replace_char(line, ",", " ") # Each line is searched for the quote character "$" and removed using the function initialized above
         if not a.strip() == "":
             g.write(a)
     g.close()

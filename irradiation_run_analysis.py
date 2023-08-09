@@ -69,7 +69,7 @@ file_location = "".join(file_location)
 
 # csv file is written to include the following values below
 with open(filename, 'w') as csvfile:
-    csvwriter = csv.writer(csvfile, delimiter = ' ', quotechar = "$", quoting = csv.QUOTE_MINIMAL) # Necessary to remove the quotation marks 
+    csvwriter = csv.writer(csvfile, delimiter = ',', escapechar = "$", quoting = csv.QUOTE_NONE) # Necessary to remove the quotation marks 
     csvwriter.writerow(("Filename given when saved in H2ORUN=", file_location))
     csvwriter.writerow(("Date of measurement=", date_measure_irr))
     csvwriter.writerow(('Time of measurement=', time_measure_irr))
@@ -77,7 +77,7 @@ with open(filename, 'w') as csvfile:
     csvwriter.writerow(("Dissipation time (s)", time_dis))
     csvwriter.writerow(("Afterdrift time (s)", time_post))
     csvwriter.writerow(("Current decade box resistance=", R_burster))
-    csvwriter.writerow(("1 Ohm calibration (V/ohm)=", ohm_calibration(time_pre_ohm, time_ohm, time_post_ohm, total_time_ohm, tme_ohm, voltages_ohm, pre_drift_ignore, post_drift_ignore, ohm_run_ignore)))
+    csvwriter.writerow(("1 Ohm calibration (V/ohm) from" , filename_ohm, "=", ohm_calibration(time_pre_ohm, time_ohm, time_post_ohm, total_time_ohm, tme_ohm, voltages_ohm, pre_drift_ignore, post_drift_ignore, ohm_run_ignore)))
     csvwriter.writerow(("Change in voltage for irradiation run (V)=", deltaV(time_pre, time_dis, time_post, total_time, tme, voltages, R_burster, pre_drift_ignore, post_drift_ignore, T_cal)))
     csvwriter.writerow(("Change in temperature for irradiation run (K)=", deltaV_to_deltaT(deltaV(time_pre, time_dis, time_post, total_time, tme, voltages, R_burster, pre_drift_ignore, post_drift_ignore, T_cal), T_cal, R_burster)))
     csvwriter.writerow(("-------------------------------------------"))
@@ -91,7 +91,7 @@ def replace_char(csv_line, old_char, new_char):
 with open('irr_analysis_results.csv') as f: # Also written to a .txt file for easier analysis in the future
     g = open("irr_analysis_results.txt", "w")
     for i, line in enumerate(f):
-        a = replace_char(line, "$", "") # Each line is searched for the quote character "$" and removed using the function initialized above
+        a = replace_char(line, ",", " ") # Each line is searched for the quote character "$" and removed using the function initialized above
         if not a.strip() == "":
             g.write(a)
     g.close()

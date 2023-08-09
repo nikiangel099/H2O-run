@@ -5,12 +5,12 @@ import os
 import csv
 
 # Seconds of pre, dis, and post to ignore in linear fit
-pre_drift_ignore = 10
-post_drift_ignore = 10
-ohm_run_ignore = 6
+pre_drift_ignore = 5
+post_drift_ignore = 5
+ohm_run_ignore = 2
 
 # # Ohm run variables are read from read_from_file.py, otherwise it is taken from live_ohm_run.py
-generator = read_ohm_file() # read_ohm_file() becomes a generator object
+generator = read_ohm_file(filename_ohm) # read_ohm_file() becomes a generator object
 date_measure_ohm = next(generator) # First yield result is given to variable date of measurement
 time_measure_ohm = next(generator)
 time_pre_ohm = int(next(generator)) 
@@ -64,7 +64,7 @@ file_location = "".join(file_location)
 
 # csv file is written to include the following values below
 with open(filename, 'w') as csvfile:
-    csvwriter = csv.writer(csvfile, delimiter = ' ', quotechar = "$", quoting = csv.QUOTE_MINIMAL) # Necessary to remove the quotation marks 
+    csvwriter = csv.writer(csvfile, delimiter = ',', escapechar = "$", quoting = csv.QUOTE_NONE) # Necessary to remove the quotation marks 
     csvwriter.writerow(("Filename given when saved in H2ORUN=", file_location))
     csvwriter.writerow(("Date of measurement=", date_measure_ohm))
     csvwriter.writerow(('Time of measurement=', time_measure_ohm))
@@ -83,7 +83,7 @@ def replace_char(csv_line, old_char, new_char):
 with open('ohm_analysis_results.csv') as f: # Also written to a .txt file for easier analysis in the future
     g = open("ohm_analysis_results.txt", "w")
     for i, line in enumerate(f):
-        a = replace_char(line, "$", "") # Each line is searched for the quote character "$" and removed using the function initialized above
+        a = replace_char(line, ",", " ") # Each line is searched for the quote character "$" and removed using the function initialized above
         if not a.strip() == "":
             g.write(a)
     g.close()

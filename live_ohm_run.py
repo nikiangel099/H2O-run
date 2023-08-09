@@ -14,9 +14,9 @@ device = 'GPIB0::2::INSTR'  # Device address of lock-in amplifier
 inst = rm.open_resource(device)
 
 # Below is pre, dis and post time intervals (s)
-time_pre_ohm = 50
-time_ohm = 50
-time_post_ohm = 50
+time_pre_ohm = 10
+time_ohm = 10
+time_post_ohm = 10
 total_time_ohm = time_pre_ohm + time_ohm + time_post_ohm
 # Need to find a way to initialize the burster setting in the interface, but just initialized the value below
 bursterSetting = 19669
@@ -49,13 +49,13 @@ while counter < total_time_ohm + 1:
 filename = "live_ohm_run_to_file.csv"
 file_location = str(os.getcwd()), "\\", "live_ohm_run_to_file.txt"
 file_location = "".join(file_location)
-date = d.strftime("%A"), ", ", d.strftime("%b"), " ", d.strftime("%d"), ", ", d.strftime("%Y")
+date = d.strftime("%A"), " ", d.strftime("%b"), " ", d.strftime("%d"), " ", d.strftime("%Y")
 date = "".join(date)
 date = "".join(date)
 
 # csv file is written to include the following values below
 with open(filename, 'w') as csvfile:
-    csvwriter = csv.writer(csvfile, delimiter = ' ', quotechar = "$", quoting = csv.QUOTE_MINIMAL) # Necessary to remove the quotation marks 
+    csvwriter = csv.writer(csvfile, delimiter = ',', escapechar = "$", quoting = csv.QUOTE_NONE) # Necessary to remove the quotation marks 
     csvwriter.writerow(('Time (s)', 'Voltage (microV)'))
     for i in range(total_time_ohm + 1): 
         csvwriter.writerow((format(tme_ohm[i], '.7f'), format(voltages_ohm[i], '.7f')))
@@ -74,7 +74,7 @@ def replace_char(csv_line, old_char, new_char):
 with open('live_ohm_run_to_file.csv') as f: # Also written to a .txt file for easier analysis in the future
     g = open("live_ohm_run_to_file.txt", "w")
     for i, line in enumerate(f):  # Each line is searched for the quote character "$" and removed using the function initialized above
-        a = replace_char(line, "$", "")
+        a = replace_char(line, ",", " ")
         if not a.strip() == "":
             g.write(a)
     g.close()
