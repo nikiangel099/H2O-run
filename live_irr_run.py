@@ -7,41 +7,38 @@ from datetime import datetime, timezone
 import pytz
 
 d = datetime.now(pytz.timezone("America/New_York"))
-# rm = pyvisa.ResourceManager()
-# device = 'GPIB0::2::INSTR'  # Device address of lock-in amplifier
-# inst = rm.open_resource(device)
+rm = pyvisa.ResourceManager()
+device = 'GPIB0::2::INSTR'  # Device address of lock-in amplifier
+inst = rm.open_resource(device)
 
 
 # Below is pre, dis and post time intervals (s)
-time_pre= 60 
-time_dis = 20
-time_post = 60
+time_pre= 10
+time_dis = 10
+time_post = 10
 total_time= time_pre + time_dis + time_post
 
 # Need to find a way to initialize the burster setting in the interface, but just initialized the value below
 bursterSetting = 19669
 
 tme = []
-voltages = [0.00012]*(total_time + 1) # Made up voltages to run code without being connected to gpib device
-
-for i in range(total_time + 1): # Made up time 
-    tme.append(i)
+voltages = []
 
 curr_time = d.strftime("%X") # Initializes variable to the current time
 
 # # Keep commented unless connected to GPIB device:
-# counter = 1
-# start = time.time()
-# tme_ohm.append(0)
-# voltages_ohm.append(float(inst.query('Q')[:-2])*1e3)
-# while counter < total_time_ohm + 1:
-#     curr = time.time()
-#     if (curr - start) > counter:
-#         tme_ohm.append(curr - start)
-#         voltages_ohm.append(float(inst.query('Q')[:-2])*1e3)
-#         counter += 1
-#         plt.plot(tme_ohm, voltages_ohm)
-#         plt.show()
+counter = 1
+start = time.time()
+tme.append(0)
+voltages.append(float(inst.query('Q')[:-2])*1e3)
+while counter < total_time + 1:
+    curr = time.time()
+    if (curr - start) > counter:
+        tme.append(curr - start)
+        voltages.append(float(inst.query('Q')[:-2])*1e3)
+        counter += 1
+        plt.plot(tme, voltages)
+        plt.show()
 
 # Below gets file location and current date of the file that will be displayed in the output analysis file
 filename = "live_irr_run_to_file.csv"

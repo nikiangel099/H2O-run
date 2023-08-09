@@ -44,7 +44,6 @@ plt.plot(tme[time_pre + time_dis + post_drift_ignore:total_time + 1],voltages[ti
 plt.show()
 plt.close()
 
-
 def deltaV(time_pre, time_dis, time_post, total_time, tme, voltages, R_burster, pre_drift_ignore, post_drift_ignore, T_cal):
     a, b = np.polyfit(tme[1:time_pre - pre_drift_ignore + 1],voltages[1:time_pre - pre_drift_ignore + 1], 1)
     pre_volt = a * (total_time - time_dis - time_post + 0.5 * time_dis) + b 
@@ -56,8 +55,8 @@ def deltaV(time_pre, time_dis, time_post, total_time, tme, voltages, R_burster, 
     return delta_volt
 
 def deltaV_to_deltaT(delta_volt, T_cal, R_burster):
+    global deltaV_deltaR
     beta = 3112.621146 # Beta value of one of the two probes
-    deltaV_deltaR = ohm_calibration(time_pre_ohm, time_ohm, time_post_ohm, total_time_ohm, tme_ohm, voltages_ohm, pre_drift_ignore, post_drift_ignore, ohm_run_ignore)
     #deltaV_deltaR = 25e-6 # # The above should be approximately equal to this value (V/ohm)
     delta_T = (delta_volt*T_cal**2)/(deltaV_deltaR*R_burster*beta)
     

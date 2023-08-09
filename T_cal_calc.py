@@ -3,13 +3,17 @@ from functions import *
 import math
 
 # This file takes the four-series resistance and outputs the temperature of the calorimeter
+# This T_cal calculation is needed for a live run of irradiation
 
-inst = access_multimeter()
+rm = pyvisa.ResourceManager()
+device = 'GPIB0::16::INSTR'  # Device address of multi-meter amplifier
+inst = rm.open_resource(device)
 
-inst.write("ROUTe:CLOSe (@1)") # # The below is not needed as T_cal is read from the irradiation run text file
-inst.write("ROUTe:OPEN (@1)")
+inst.write("ROUTe:CLOSe (@3)") # # The below is not needed as T_cal is read from the irradiation run text file
+inst.write("ROUTe:OPEN (@3)")
 R_temp = float(inst.query(':MEASure:FRESistance?'))
-temp_probe = 1 # # The below constants are based on which RTD probe is used
+print(R_temp)
+temp_probe = 3 # # The below constants are based on which RTD probe is used
 
 if int(temp_probe) == 1:
     AI = 0.003942247616179
@@ -32,4 +36,4 @@ else:
     BI = 2.09532e-6
     RI = 100.04198
     
-live_T_cal = (-1*AI+(math.sqrt((AI*AI)-(4*BI*(1-(R_temp/RI))))))/(2*BI)
+live_T_cal = (-1*AI+(math.sqrt((AI*AI)-(4*BI*(1-(R_temp/RI))))))/(2*BI) # Use this result for irradiation_run_analysis.py

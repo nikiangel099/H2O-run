@@ -5,9 +5,9 @@ import os
 import csv
 
 # Seconds of pre, dis, and post to ignore in linear fit
-pre_drift_ignore = 5
-post_drift_ignore = 5
-ohm_run_ignore = 2
+pre_drift_ignore = 10
+post_drift_ignore = 10
+ohm_run_ignore = 6
 
 # # Ohm run variables are read from read_from_file.py, otherwise it is taken from live_ohm_run.py
 generator = read_ohm_file() # read_ohm_file() becomes a generator object
@@ -34,9 +34,9 @@ plt.show()
 plt.xlabel('time (s)')
 plt.ylabel('Voltage (mV)')
 plt.rcParams["figure.figsize"] = [20, 15]
-plt.plot(tme_ohm[1:time_pre_ohm - 4],voltages_ohm[1:time_pre_ohm - 4], c='blue') # Pre-drift is plotted in blue 
-plt.plot(tme_ohm[time_pre_ohm + 5:total_time_ohm - time_post_ohm - 4],voltages_ohm[time_pre_ohm + 5:total_time_ohm - time_post_ohm - 4], c='black') # Duration of 1 ohm gain is plotted in black
-plt.plot(tme_ohm[time_pre_ohm + time_ohm + 5:total_time_ohm + 1],voltages_ohm[time_pre_ohm + time_ohm + 5:total_time_ohm +1], c='red') # Post-drift is plotted in red
+plt.plot(tme_ohm[1:time_pre_ohm - pre_drift_ignore + 1],voltages_ohm[1:time_pre_ohm - pre_drift_ignore + 1], c='blue') # Pre-drift is plotted in blue 
+plt.plot(tme_ohm[time_pre_ohm + ohm_run_ignore:total_time_ohm - time_post_ohm - ohm_run_ignore + 1],voltages_ohm[time_pre_ohm + ohm_run_ignore:total_time_ohm - time_post_ohm - ohm_run_ignore + 1], c='black') # Duration of 1 ohm gain is plotted in black
+plt.plot(tme_ohm[time_pre_ohm + time_ohm + post_drift_ignore:total_time_ohm + 1],voltages_ohm[time_pre_ohm + time_ohm + post_drift_ignore:total_time_ohm +1], c='red') # Post-drift is plotted in red
 plt.show()
 plt.close()
 
@@ -55,6 +55,8 @@ def ohm_calibration(time_pre_ohm, time_ohm, time_post_ohm, total_time_ohm, tme_o
     
     return calibration # returns (deltaV/deltaR)_1ohm
 
+deltaV_deltaR = ohm_calibration(time_pre_ohm, time_ohm, time_post_ohm, total_time_ohm, tme_ohm, voltages_ohm, pre_drift_ignore, post_drift_ignore, ohm_run_ignore)
+
 # File location where ohm run analysis result is saved is extracted below
 filename = "ohm_analysis_results.csv"
 file_location = str(os.getcwd()), "\\", "ohm_analysis_results.txt"
@@ -69,7 +71,7 @@ with open(filename, 'w') as csvfile:
     csvwriter.writerow(("PreOHM time (s)=", time_pre_ohm))
     csvwriter.writerow(("OHM time (s)=", time_ohm))
     csvwriter.writerow(("AfterOHM time (s)=", time_post_ohm))
-    csvwriter.writerow(("1 Ohm calibration (V/ohm)=", ohm_calibration(time_pre_ohm, time_ohm, time_post_ohm, total_time_ohm, tme_ohm, voltages_ohm, pre_drift_ignore, post_drift_ignore, ohm_run_ignore)))
+    csvwriter.writerow(("1 Ohm calibration (V/ohm)=", deltaV_deltaR))
     csvwriter.writerow(("-------------------------------------------"))
     csvwriter.writerow(('Time (s)', 'Voltage (mV)'))
     for i in range(total_time_ohm + 1): 
