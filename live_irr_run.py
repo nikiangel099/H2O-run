@@ -5,7 +5,7 @@ import csv
 import os
 from datetime import datetime, timezone
 import pytz
-from T_cal_calc import *
+#from T_cal_calc import *
 
 d = datetime.now(pytz.timezone("America/New_York"))
 rm = pyvisa.ResourceManager()
@@ -26,23 +26,38 @@ tme = []
 voltages = []
 
 curr_time = d.strftime("%X") # Initializes variable to the current time
-T_cal_1 = measure_T_cal() # pre-irr T_cal is measured
+#T_cal_1 = measure_T_cal() # pre-irr T_cal is measured
 # # Keep commented unless connected to GPIB device:
+plt.ion()
+plt.xlabel('time (s)')
+plt.ylabel('Voltage (mV)')
+plt.rcParams["figure.figsize"] = [1, 1]
 counter = 1
 start = time.time()
 tme.append(0)
 voltages.append(float(inst.query('Q')[:-2])*1e3)
+plt.plot(tme, voltages)
+plt.draw()
+plt.pause(0.7)
 while counter < total_time + 1:
     curr = time.time()
     if (curr - start) > counter:
+        plt.clf()
         tme.append(curr - start)
         voltages.append(float(inst.query('Q')[:-2])*1e3)
         counter += 1
+        plt.xlabel('time (s)')
+        plt.ylabel('Voltage (mV)')
+        plt.rcParams["figure.figsize"] = [1, 1]
         plt.plot(tme, voltages)
-        plt.show()
+        plt.draw()
+        plt.pause(0.7)
         
-T_cal_2 = measure_T_cal() # post-irr T_cal is measured
-T_cal = (T_cal_1+T_cal_2)/2 # Average T_cal is taken
+plt.ioff()
+plt.show()
+        
+#T_cal_2 = measure_T_cal() # post-irr T_cal is measured
+#T_cal = (T_cal_1+T_cal_2)/2 # Average T_cal is taken
 
 # Below gets file location and current date of the file that will be displayed in the output analysis file
 filename = "live_irr_run_to_file.csv"
@@ -55,7 +70,7 @@ date = "".join(date)
 # csv file is written to include the following values below
 with open(filename, 'w') as csvfile:
     csvwriter = csv.writer(csvfile, delimiter = ',', escapechar = "$", quoting = csv.QUOTE_NONE) # Necessary to remove the quotation marks 
-    csvwriter.writerow(('Time (s)', 'Voltage (microV)'))
+    csvwriter.writerow(('Time (s)', 'Voltage (mV)'))
     for i in range(total_time + 1): 
         csvwriter.writerow((format(tme[i], '.7f'), format(voltages[i], '.7f')))
     csvwriter.writerow(("Filename given when saved in H2ORUN=", file_location))
@@ -64,7 +79,7 @@ with open(filename, 'w') as csvfile:
     csvwriter.writerow(('Predrift time (s)=', time_pre))
     csvwriter.writerow(('Dissipation time (s)=', time_dis))
     csvwriter.writerow(('Afterdrift time (s)=', time_post))
-    csvwriter.writerow(('Twater(K)=', T_cal))
+    #csvwriter.writerow(('Twater(K)=', T_cal))
     csvwriter.writerow(('Decade box setting(OHM)=', bursterSetting))
 
     

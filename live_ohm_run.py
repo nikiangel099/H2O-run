@@ -31,19 +31,33 @@ voltages_ohm = []
 curr_time = d.strftime("%X") # Initializes variable to the current time
 
 # Only uncomment below when connected to GPIB device:
+plt.ion()
+plt.xlabel('time (s)')
+plt.ylabel('Voltage (mV)')
+plt.rcParams["figure.figsize"] = [1, 1]
 counter = 1
 start = time.time()
 tme_ohm.append(0)
 voltages_ohm.append(float(inst.query('Q')[:-2])*1e3)
+plt.plot(tme_ohm, voltages_ohm)
+plt.draw()
+plt.pause(0.7)
 while counter < total_time_ohm + 1:
     curr = time.time()
     if (curr - start) > counter:
-        tme_ohm.append(curr - start)
+        plt.clf()
+        tme_ohm .append(curr - start)
         voltages_ohm.append(float(inst.query('Q')[:-2])*1e3)
         counter += 1
+        plt.xlabel('time (s)')
+        plt.ylabel('Voltage (mV)')
+        plt.rcParams["figure.figsize"] = [1, 1]
         plt.plot(tme_ohm, voltages_ohm)
-        print(voltages_ohm[counter-1])
-        plt.show()
+        plt.draw()
+        plt.pause(0.7)
+        
+plt.ioff()
+plt.show()
 
 # Below gets file location and current date of the file that will be displayed in the output analysis file
 filename = "live_ohm_run_to_file.csv"
@@ -56,7 +70,7 @@ date = "".join(date)
 # csv file is written to include the following values below
 with open(filename, 'w') as csvfile:
     csvwriter = csv.writer(csvfile, delimiter = ',', escapechar = "$", quoting = csv.QUOTE_NONE) # Necessary to remove the quotation marks 
-    csvwriter.writerow(('Time (s)', 'Voltage (microV)'))
+    csvwriter.writerow(('Time (s)', 'Voltage (mV)'))
     for i in range(total_time_ohm + 1): 
         csvwriter.writerow((format(tme_ohm[i], '.7f'), format(voltages_ohm[i], '.7f')))
     csvwriter.writerow(("Filename given when saved in H2ORUN=", file_location))
