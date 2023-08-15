@@ -9,7 +9,7 @@ pre_drift_ignore = 5
 post_drift_ignore = 5
 ohm_run_ignore = 2
 
-# # Ohm run variables are read from read_from_file.py, otherwise it is taken from live_ohm_run.py
+# # Ohm run variables are read from read_from_file.py
 generator = read_ohm_file(filename_ohm) # read_ohm_file() becomes a generator object
 date_measure_ohm = next(generator) # First yield result is given to variable date of measurement
 time_measure_ohm = next(generator)
